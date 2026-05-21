@@ -1,0 +1,9 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+django-environ
+gunicorn
+whitenoise
+django-bootstrap5
+psycopg2-binary
+Pillow

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - Taskly{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 fw-bold">Projects</h1>
+    {% if user.is_admin %}
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'projects:create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> New Project
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for project in projects %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title fw-bold mb-0">{{ project.name }}</h5>
+                    <span class="badge {% if project.status == 'active' %}bg-primary{% elif project.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+                <p class="card-text text-muted small mb-3 text-truncate-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ project.description }}
+                </p>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-calendar-event me-2 text-muted"></i>
+                    <span class="small text-muted">Deadline: {{ project.deadline }}</span>
+                </div>
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar-group d-flex">
+                        {% for member in project.members.all|slice:":3" %}
+                        <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center me-n2" 
+                             style="width: 32px; height: 32px; font-size: 10px; margin-right: -8px;" 
+                             title="{{ member.user.username }}">
+                            {{ member.user.username|slice:":1"|upper }}
+                        </div>
+                        {% endfor %}
+                        {% if project.members.count > 3 %}
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center text-xs" 
+                             style="width: 32px; height: 32px; font-size: 10px; margin-left: 8px;">
+                            +{{ project.members.count|add:"-3" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <span class="small text-muted ms-3">{{ project.tasks.count }} Tasks</span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0 pb-3">
+                <a href="{% url 'projects:detail' project.pk %}" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-folder2-open fs-1 text-muted d-block mb-3"></i>
+        <p class="text-muted">No projects found. Create your first project to get started!</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

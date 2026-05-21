@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Manohar's Taskly{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 fw-bold">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'projects:create' %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-plus-lg me-1"></i> New Project
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="summary-card bg-indigo shadow">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Total Projects</h6>
+                    <h2 class="mb-0 fw-bold">{{ total_projects }}</h2>
+                </div>
+                <div class="bg-white bg-opacity-25 rounded-circle p-3">
+                    <i class="bi bi-briefcase fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card bg-amber shadow">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Pending Tasks</h6>
+                    <h2 class="mb-0 fw-bold">{{ pending_tasks }}</h2>
+                </div>
+                <div class="bg-white bg-opacity-25 rounded-circle p-3">
+                    <i class="bi bi-clock-history fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card bg-emerald shadow">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Completed Tasks</h6>
+                    <h2 class="mb-0 fw-bold">{{ completed_tasks }}</h2>
+                </div>
+                <div class="bg-white bg-opacity-25 rounded-circle p-3">
+                    <i class="bi bi-check2-circle fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card bg-rose shadow">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold small mb-1">Overdue Tasks</h6>
+                    <h2 class="mb-0 fw-bold">{{ overdue_count }}</h2>
+                </div>
+                <div class="bg-white bg-opacity-25 rounded-circle p-3">
+                    <i class="bi bi-exclamation-triangle fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Chart Section -->
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fs-5">Task Status Distribution</span>
+            </div>
+            <div class="card-body">
+                <canvas id="taskChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fs-5">Recent Tasks</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for task in recent_tasks %}
+                    <div class="list-group-item p-3">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1 fw-bold">{{ task.title }}</h6>
+                            <small class="text-muted">{{ task.created_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-1 small text-muted text-truncate" style="max-width: 300px;">{{ task.description }}
+                        </p>
+                        <span class="badge bg-{{ task.priority|lower|default:'secondary' }} px-2 py-1 small">
+                            {{ task.get_priority_display }}
+                        </span>
+                        <span class="badge bg-light text-dark border px-2 py-1 small ms-1">
+                            {{ task.get_status_display }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No recent tasks found
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'tasks:list' %}" class="btn btn-sm btn-link text-decoration-none">View All Tasks</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('taskChart').getContext('2d');
+    const statusData = {
+        labels: [{% for entry in status_counts %}'{{ entry.status|title }}', {% endfor %}],
+    datasets: [{
+        label: 'Tasks by Status',
+        data: [{% for entry in status_counts %}{{ entry.count }}, {% endfor %}],
+        backgroundColor: [
+            '#6366f1', // pending
+            '#fbbf24', // in progress
+            '#34d399', // completed
+        ],
+            borderWidth: 0,
+                borderRadius: 8,
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: statusData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}

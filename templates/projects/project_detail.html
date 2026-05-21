@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Project Details - Taskly{% endblock %}
+
+{% block content %}
+<div class="row pt-4">
+    <div class="col-lg-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'projects:list' %}" class="text-decoration-none">Projects</a></li>
+                <li class="breadcrumb-item active">{{ project.name }}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold mb-0">{{ project.name }}</h2>
+                    {% if user.is_admin %}
+                    <div class="btn-group">
+                        <a href="{% url 'projects:update' project.pk %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                        <a href="{% url 'projects:delete' project.pk %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <h6 class="text-uppercase fw-bold text-muted small mb-2">Description</h6>
+                <p class="lead mb-4">{{ project.description }}</p>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase fw-bold text-muted small mb-1">Created By</h6>
+                        <p class="mb-0 fw-semibold">{{ project.created_by.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase fw-bold text-muted small mb-1">Deadline</h6>
+                        <p class="mb-0 fw-semibold">{{ project.deadline }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Project Tasks</h5>
+                {% if user.is_admin %}
+                <a href="{% url 'tasks:create' %}?project={{ project.pk }}" class="btn btn-primary btn-sm">Add Task</a>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Assigned To</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr>
+                                <td class="fw-semibold">{{ task.title }}</td>
+                                <td class="small">{{ task.assigned_to.username|default:"Unassigned" }}</td>
+                                <td>
+                                    <span class="badge {% if task.status == 'completed' %}bg-success{% elif task.status == 'in_progress' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'tasks:detail' task.pk %}" class="btn btn-sm btn-link p-0">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">No tasks for this project yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent">
+                <h5 class="fw-bold mb-0">Team Members</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for member in members %}
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                                {{ member.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold small">{{ member.user.username }}</h6>
+                                <span class="text-muted text-xs">{{ member.get_role_display }}</span>
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item px-0 text-muted">No members added yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="fw-bold mb-0">Project Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <span class="badge {% if project.status == 'active' %}bg-primary{% elif project.status == 'completed' %}bg-success{% else %}bg-warning{% endif %} fs-6 px-4 py-2 w-100">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

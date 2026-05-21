@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Tasks - Taskly{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 fw-bold">Tasks</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        {% if user.is_admin %}
+        <a href="{% url 'tasks:create' %}" class="btn btn-primary btn-sm me-2">
+            <i class="bi bi-plus-lg me-1"></i> New Task
+        </a>
+        {% endif %}
+        
+        <!-- Filter Dropdown -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-filter me-1"></i> Filter
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                <li><h6 class="dropdown-header small text-uppercase">Status</h6></li>
+                <li><a class="dropdown-item" href="?">All Statuses</a></li>
+                <li><a class="dropdown-item" href="?status=pending">Pending</a></li>
+                <li><a class="dropdown-item" href="?status=in_progress">In Progress</a></li>
+                <li><a class="dropdown-item" href="?status=completed">Completed</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header small text-uppercase">Priority</h6></li>
+                <li><a class="dropdown-item" href="?priority=high">High</a></li>
+                <li><a class="dropdown-item" href="?priority=medium">Medium</a></li>
+                <li><a class="dropdown-item" href="?priority=low">Low</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Project</th>
+                    <th>Assigned To</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Deadline</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td class="fw-semibold">{{ task.title }}</td>
+                    <td class="text-muted small">{{ task.project.name }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-person me-1"></i>{{ task.assigned_to.username|default:"Unassigned" }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
+                            {{ task.get_priority_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if task.status == 'completed' %}bg-success{% elif task.status == 'in_progress' %}bg-primary{% else %}bg-secondary{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="{% if task.is_overdue %}text-danger fw-bold{% else %}text-muted{% endif %} small">
+                            {{ task.deadline }}
+                            {% if task.is_overdue %}<i class="bi bi-exclamation-circle ms-1"></i>{% endif %}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group">
+                            <a href="{% url 'tasks:detail' task.pk %}" class="btn btn-sm btn-outline-secondary" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'tasks:update' task.pk %}" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% if user.is_admin %}
+                            <a href="{% url 'tasks:delete' task.pk %}" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        No tasks found matching your criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

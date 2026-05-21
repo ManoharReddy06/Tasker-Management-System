@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block auth_content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark">Welcome Back</h2>
+            <p class="text-muted">Sign in to manage your team's tasks</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button type="submit" class="btn btn-primary w-100 mt-3 py-2">Sign In</button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="mb-0 text-muted">Don't have an account? <a href="{% url 'accounts:signup' %}"
+                    class="text-primary text-decoration-none fw-semibold">Sign Up</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

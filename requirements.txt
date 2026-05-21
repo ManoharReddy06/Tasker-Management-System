@@ -2,6 +2,8 @@ django
 djangorestframework
 djangorestframework-simplejwt
 django-environ
+dj-database-url
+python-dotenv
 gunicorn
 whitenoise
 django-bootstrap5
